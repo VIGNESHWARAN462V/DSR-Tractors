@@ -10,7 +10,6 @@ import {
   Lock,
   Mail,
   ArrowRight,
-  ShieldCheck,
   Eye,
   EyeOff,
   CheckCircle2,
@@ -37,7 +36,6 @@ export const Auth: React.FC<AuthProps> = ({
     signUp,
     resetPasswordForEmail,
     updatePassword,
-    loginAsDemo,
     isRecoveryMode,
   } = useAuth();
 
@@ -181,13 +179,6 @@ export const Auth: React.FC<AuthProps> = ({
     } else {
       setError(res.error || 'Failed to update password');
     }
-  };
-
-  // 6. DEMO LOGIN HANDLER
-  const handleDemoLogin = async () => {
-    setLoading(true);
-    await loginAsDemo();
-    setLoading(false);
   };
 
   return (
@@ -412,48 +403,6 @@ export const Auth: React.FC<AuthProps> = ({
                     Sign Up
                   </button>
                 </div>
-
-                {/* 1-Click Demo Login */}
-                <div
-                  style={{
-                    margin: '20px 0',
-                    position: 'relative',
-                    textAlign: 'center',
-                  }}
-                >
-                  <div
-                    style={{
-                      height: '1px',
-                      backgroundColor: 'var(--border-color)',
-                      position: 'absolute',
-                      top: '50%',
-                      left: 0,
-                      right: 0,
-                    }}
-                  />
-                  <span
-                    style={{
-                      position: 'relative',
-                      backgroundColor: 'var(--bg-surface)',
-                      padding: '0 12px',
-                      fontSize: 11,
-                      color: 'var(--text-muted)',
-                      fontWeight: 700,
-                    }}
-                  >
-                    QUICK DEMO ACCESS
-                  </span>
-                </div>
-
-                <Button
-                  type="button"
-                  variant="secondary"
-                  fullWidth
-                  onClick={handleDemoLogin}
-                  icon={<ShieldCheck size={18} color="var(--primary)" />}
-                >
-                  1-Click Demo Login
-                </Button>
               </form>
             )}
 
