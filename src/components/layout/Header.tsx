@@ -19,7 +19,7 @@ export const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
 
   return (
     <header className="top-header">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1, marginRight: 12 }}>
         {/* Tractor SVG Brand Icon (Shown on mobile/tablet) */}
         <div
           className="header-brand-icon"
@@ -44,13 +44,45 @@ export const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
             <path d="M14 14V9"/>
           </svg>
         </div>
-        <div>
-          <h1 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-main)', lineHeight: 1.1 }}>{title}</h1>
-          {subtitle && <p style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-secondary)' }}>{subtitle}</p>}
+        <div style={{ minWidth: 0, flex: 1, padding: '2px 0' }}>
+          <h1
+            style={{
+              fontSize: 18,
+              fontWeight: 800,
+              color: 'var(--text-main)',
+              lineHeight: 1.35,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              margin: 0,
+              padding: 0,
+            }}
+          >
+            {title}
+          </h1>
+          {subtitle && (
+            <p
+              style={{
+                fontSize: 12,
+                fontWeight: 500,
+                color: 'var(--text-secondary)',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                marginTop: 2,
+                marginRight: 0,
+                marginBottom: 0,
+                marginLeft: 0,
+                lineHeight: 1.3,
+              }}
+            >
+              {subtitle}
+            </p>
+          )}
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         <button
           onClick={toggleTheme}
           title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
@@ -65,6 +97,7 @@ export const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
             justifyContent: 'center',
             cursor: 'pointer',
             color: 'var(--text-secondary)',
+            flexShrink: 0,
           }}
         >
           {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
@@ -80,9 +113,8 @@ export const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
                 color: 'var(--text-secondary)',
                 backgroundColor: 'var(--bg-hover)',
                 border: '1px solid var(--border-color)',
-                padding: '6px 10px',
+                padding: '6px 12px',
                 borderRadius: 'var(--radius-md)',
-                maxWidth: 160,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
@@ -106,6 +138,7 @@ export const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
                 justifyContent: 'center',
                 cursor: 'pointer',
                 color: 'var(--text-secondary)',
+                flexShrink: 0,
               }}
             >
               <LogOut size={18} />

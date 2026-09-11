@@ -259,7 +259,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       </div>
 
       {/* CORE KPI CARDS GRID */}
-      <div className="grid-2" style={{ marginBottom: 16 }}>
+      <div className="grid-2 grid-kpi" style={{ marginBottom: 20 }}>
         {/* Today's Revenue */}
         <Card style={{ padding: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -333,13 +333,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </Card>
       </div>
 
-      {/* TRACTOR FUEL BALANCES (3 TRACTORS) */}
-      <Card style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <div>
-            <h3 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Fuel size={20} color="var(--primary)" />
-              Tractor Fuel Status
+      {/* 2-COLUMN BALANCED DESKTOP SECTIONS */}
+      <div className="dashboard-sections-grid">
+        {/* TRACTOR FUEL BALANCES (3 TRACTORS) */}
+        <Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <div>
+              <h3 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Fuel size={20} color="var(--primary)" />
+                Tractor Fuel Status
             </h3>
             <p className="card-subtitle">Real-time tank levels for all 3 fleet vehicles</p>
           </div>
@@ -484,6 +486,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         )}
       </Card>
+      </div>
     </div>
   );
 };
