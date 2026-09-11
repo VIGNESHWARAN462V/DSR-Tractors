@@ -15,7 +15,6 @@ import {
   EyeOff,
   CheckCircle2,
   AlertTriangle,
-  RotateCcw,
   ArrowLeft,
   KeyRound,
   UserPlus,
@@ -36,7 +35,6 @@ export const Auth: React.FC<AuthProps> = ({
   const {
     login,
     signUp,
-    resendConfirmation,
     resetPasswordForEmail,
     updatePassword,
     loginAsDemo,
@@ -59,12 +57,6 @@ export const Auth: React.FC<AuthProps> = ({
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Unconfirmed email & Resend state
-  const [isEmailUnconfirmed, setIsEmailUnconfirmed] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [resending, setResending] = useState(false);
-  const [signupComplete, setSignupComplete] = useState(false);
-
   const isCloud = isSupabaseConfigured();
 
   // Handle URL or prop change
@@ -76,21 +68,10 @@ export const Auth: React.FC<AuthProps> = ({
     }
   }, [initialMode, isRecoveryMode]);
 
-  // Cooldown countdown timer
-  useEffect(() => {
-    if (resendCooldown <= 0) return;
-    const interval = setInterval(() => {
-      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [resendCooldown]);
-
   const switchMode = (newMode: AuthMode) => {
     setMode(newMode);
     setError('');
     setSuccessMessage('');
-    setIsEmailUnconfirmed(false);
-    setSignupComplete(false);
     onNavigateMode?.(newMode);
     if (typeof window !== 'undefined') {
       window.history.pushState(null, '', `/${newMode === 'login' ? '' : newMode}`);
@@ -111,17 +92,13 @@ export const Auth: React.FC<AuthProps> = ({
 
     setError('');
     setSuccessMessage('');
-    setIsEmailUnconfirmed(false);
     setLoading(true);
 
     const res = await login(email, password);
     setLoading(false);
 
     if (!res.success) {
-      setError(res.error || 'Failed to sign in');
-      if (res.isEmailUnconfirmed) {
-        setIsEmailUnconfirmed(true);
-      }
+      setError(res.error || 'Invalid email or password.');
     }
   };
 
@@ -149,32 +126,9 @@ export const Auth: React.FC<AuthProps> = ({
     setLoading(false);
 
     if (res.success) {
-      if (res.confirmationRequired) {
-        setSignupComplete(true);
-        setResendCooldown(60);
-      } else {
-        setSuccessMessage('Account created successfully! You are now logged in.');
-      }
+      setSuccessMessage('Account created successfully.');
     } else {
-      setError(res.error || 'Failed to create account');
-    }
-  };
-
-  // 3. RESEND CONFIRMATION HANDLER
-  const handleResend = async () => {
-    if (!email.trim() || resendCooldown > 0 || resending) return;
-
-    setResending(true);
-    setError('');
-
-    const res = await resendConfirmation(email);
-    setResending(false);
-
-    if (res.success) {
-      setSuccessMessage('Confirmation email sent! Please check your Inbox, Spam, or Promotions.');
-      setResendCooldown(60);
-    } else {
-      setError(res.error || 'Failed to resend confirmation email');
+      setError(res.error || 'Failed to create account. Please try again.');
     }
   };
 
@@ -312,57 +266,23 @@ export const Auth: React.FC<AuthProps> = ({
 
         {/* Global Error Banner */}
         {error && (
-          <div style={{ marginBottom: 18 }}>
-            <div
-              style={{
-                backgroundColor: 'rgba(239, 68, 68, 0.12)',
-                color: '#ef4444',
-                border: '1px solid rgba(239, 68, 68, 0.25)',
-                padding: '12px 14px',
-                borderRadius: 'var(--radius-md)',
-                fontSize: 13,
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: 8,
-              }}
-            >
-              <AlertTriangle size={17} style={{ flexShrink: 0, marginTop: 1 }} />
-              <div style={{ flex: 1 }}>{error}</div>
-            </div>
-
-            {error.toLowerCase().includes('confirmation email') && (
-              <div
-                style={{
-                  marginTop: 10,
-                  backgroundColor: 'rgba(59, 130, 246, 0.08)',
-                  border: '1px solid rgba(59, 130, 246, 0.25)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: '12px 14px',
-                  fontSize: 12,
-                  color: 'var(--text-secondary)',
-                  lineHeight: 1.5,
-                }}
-              >
-                <div style={{ fontWeight: 700, color: '#60a5fa', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span>Fixing Supabase SMTP & Email Confirmation:</span>
-                </div>
-                <ul style={{ paddingLeft: 18, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <li>
-                    <strong style={{ color: 'var(--text-main)' }}>Gmail App Password:</strong> If using Gmail SMTP, Google requires a 16-character <em>App Password</em> (from Google Account &rarr; Security), <u>not</u> your Gmail login password.
-                  </li>
-                  <li>
-                    <strong style={{ color: 'var(--text-main)' }}>SMTP Settings:</strong> Ensure Host is <code>smtp.gmail.com</code>, Port is <code>587</code>, and Sender Email matches your username in Supabase.
-                  </li>
-                  <li>
-                    <strong style={{ color: 'var(--text-main)' }}>Check Supabase Logs:</strong> View the exact error in Supabase Dashboard &rarr; <em>Logs</em> &rarr; <em>Auth</em>.
-                  </li>
-                  <li>
-                    <strong style={{ color: 'var(--text-main)' }}>Bypass for Testing:</strong> In Supabase Dashboard &rarr; <em>Authentication</em> &rarr; <em>Providers</em> &rarr; <em>Email</em>, toggle off <em>Confirm email</em> to test accounts immediately.
-                  </li>
-                </ul>
-              </div>
-            )}
+          <div
+            style={{
+              backgroundColor: 'rgba(239, 68, 68, 0.12)',
+              color: '#ef4444',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              padding: '12px 14px',
+              borderRadius: 'var(--radius-md)',
+              fontSize: 13,
+              fontWeight: 600,
+              marginBottom: 18,
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 8,
+            }}
+          >
+            <AlertTriangle size={17} style={{ flexShrink: 0, marginTop: 1 }} />
+            <div style={{ flex: 1 }}>{error}</div>
           </div>
         )}
 
@@ -387,145 +307,6 @@ export const Auth: React.FC<AuthProps> = ({
             <div style={{ flex: 1 }}>{successMessage}</div>
           </div>
         )}
-
-        {/* UNCONFIRMED EMAIL NOTICE & RESEND ACTION */}
-        {isEmailUnconfirmed && mode === 'login' && (
-          <div
-            style={{
-              backgroundColor: 'rgba(234, 179, 8, 0.12)',
-              color: '#eab308',
-              border: '1px solid rgba(234, 179, 8, 0.3)',
-              padding: '14px',
-              borderRadius: 'var(--radius-md)',
-              marginBottom: 18,
-              fontSize: 13,
-            }}
-          >
-            <div style={{ fontWeight: 700, marginBottom: 4 }}>
-              Email Not Confirmed
-            </div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 12, marginBottom: 10 }}>
-              Please check your Inbox, Spam, or Promotions folder to verify your account before logging in.
-            </p>
-            <button
-              type="button"
-              onClick={handleResend}
-              disabled={resendCooldown > 0 || resending}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                backgroundColor: 'transparent',
-                border: '1px solid #eab308',
-                color: '#eab308',
-                borderRadius: 'var(--radius-md)',
-                padding: '6px 12px',
-                fontSize: 12,
-                fontWeight: 700,
-                cursor: resendCooldown > 0 || resending ? 'not-allowed' : 'pointer',
-                opacity: resendCooldown > 0 || resending ? 0.6 : 1,
-              }}
-            >
-              <RotateCcw size={13} />
-              <span>
-                {resending
-                  ? 'Sending...'
-                  : resendCooldown > 0
-                  ? `Resend available in ${resendCooldown}s`
-                  : 'Resend confirmation email'}
-              </span>
-            </button>
-          </div>
-        )}
-
-        {/* ---------------------------------------------------- */}
-        {/* VIEW 1: SIGNUP COMPLETE VERIFICATION NOTICE          */}
-        {/* ---------------------------------------------------- */}
-        {signupComplete ? (
-          <div style={{ textAlign: 'center', padding: '10px 0' }}>
-            <div
-              style={{
-                width: 54,
-                height: 54,
-                borderRadius: '50%',
-                backgroundColor: 'rgba(34, 197, 94, 0.15)',
-                color: '#22c55e',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 14,
-              }}
-            >
-              <Mail size={28} />
-            </div>
-
-            <h3
-              style={{
-                fontSize: 18,
-                fontWeight: 800,
-                color: 'var(--text-main)',
-                marginBottom: 8,
-              }}
-            >
-              Account created. Please check your email to confirm your account.
-            </h3>
-
-            <p
-              style={{
-                fontSize: 13,
-                color: 'var(--text-secondary)',
-                lineHeight: 1.5,
-                marginBottom: 20,
-              }}
-            >
-              A confirmation link has been sent to{' '}
-              <strong style={{ color: 'var(--text-main)' }}>{email}</strong>.
-              Please check your <strong>Inbox, Spam, or Promotions</strong> folder.
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <button
-                type="button"
-                onClick={handleResend}
-                disabled={resendCooldown > 0 || resending}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6,
-                  padding: '10px',
-                  backgroundColor: 'var(--bg-hover)',
-                  border: '1px solid var(--border-color)',
-                  color: 'var(--text-main)',
-                  borderRadius: 'var(--radius-md)',
-                  fontWeight: 700,
-                  fontSize: 13,
-                  cursor: resendCooldown > 0 || resending ? 'not-allowed' : 'pointer',
-                  opacity: resendCooldown > 0 || resending ? 0.6 : 1,
-                }}
-              >
-                <RotateCcw size={15} />
-                <span>
-                  {resending
-                    ? 'Sending email...'
-                    : resendCooldown > 0
-                    ? `Resend available in ${resendCooldown}s`
-                    : 'Resend confirmation email'}
-                </span>
-              </button>
-
-              <Button
-                variant="primary"
-                fullWidth
-                onClick={() => switchMode('login')}
-              >
-                <span>Back to Login</span>
-                <ArrowRight size={16} />
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <>
             {/* ---------------------------------------------------- */}
             {/* VIEW 2: LOGIN FORM                                   */}
             {/* ---------------------------------------------------- */}
@@ -748,17 +529,30 @@ export const Auth: React.FC<AuthProps> = ({
                   </button>
                 </div>
 
-                <Button
-                  type="submit"
-                  variant="primary"
-                  fullWidth
-                  isLoading={loading}
-                  disabled={loading}
-                  style={{ marginTop: 8 }}
-                >
-                  <UserPlus size={18} />
-                  <span>Create Account</span>
-                </Button>
+                {successMessage === 'Account created successfully.' ? (
+                  <Button
+                    type="button"
+                    variant="primary"
+                    fullWidth
+                    onClick={() => switchMode('login')}
+                    style={{ marginTop: 8 }}
+                  >
+                    <span>Continue to Login</span>
+                    <ArrowRight size={16} />
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    fullWidth
+                    isLoading={loading}
+                    disabled={loading}
+                    style={{ marginTop: 8 }}
+                  >
+                    <UserPlus size={18} />
+                    <span>Create Account</span>
+                  </Button>
+                )}
 
                 <div
                   style={{
@@ -956,8 +750,6 @@ export const Auth: React.FC<AuthProps> = ({
                 </div>
               </form>
             )}
-          </>
-        )}
 
         {/* Footer Database Indicator */}
         <div style={{ marginTop: 24, textAlign: 'center' }}>

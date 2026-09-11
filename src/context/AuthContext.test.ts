@@ -9,16 +9,17 @@ describe('Auth Validation & Logic', () => {
     expect(isPasswordValid('SecureP@ss1')).toBe(true);
   });
 
-  it('detects unconfirmed email errors accurately', () => {
-    const isUnconfirmedError = (msg: string) => {
-      const lower = msg.toLowerCase();
-      return lower.includes('email not confirmed') || lower.includes('not confirmed');
+  it('maps invalid login credentials to user-friendly error', () => {
+    const formatLoginError = (msg: string) => {
+      if (msg.toLowerCase().includes('invalid login credentials')) {
+        return 'Invalid email or password.';
+      }
+      return msg || 'Unable to sign in. Please try again.';
     };
 
-    expect(isUnconfirmedError('Email not confirmed')).toBe(true);
-    expect(isUnconfirmedError('User email has not confirmed yet')).toBe(true);
-    expect(isUnconfirmedError('Invalid login credentials')).toBe(false);
-    expect(isUnconfirmedError('Invalid email format')).toBe(false);
+    expect(formatLoginError('Invalid login credentials')).toBe('Invalid email or password.');
+    expect(formatLoginError('invalid login credentials provided')).toBe('Invalid email or password.');
+    expect(formatLoginError('Network request failed')).toBe('Network request failed');
   });
 
   it('correctly trims emails to prevent whitespace login bugs', () => {
@@ -27,17 +28,10 @@ describe('Auth Validation & Logic', () => {
     expect(cleanEmail('Vignesh@Gmail.COM ')).toBe('vignesh@gmail.com');
   });
 
-  it('calculates countdown timers cleanly', () => {
-    let cooldown = 60;
-    const tick = () => {
-      cooldown = Math.max(0, cooldown - 1);
-    };
-
-    tick();
-    expect(cooldown).toBe(59);
-
-    cooldown = 0;
-    tick();
-    expect(cooldown).toBe(0);
+  it('validates password matching on signup', () => {
+    const passwordsMatch = (p1: string, p2: string) => Boolean(p1 && p1 === p2);
+    expect(passwordsMatch('password123', 'password123')).toBe(true);
+    expect(passwordsMatch('password123', 'different123')).toBe(false);
+    expect(passwordsMatch('', '')).toBe(false);
   });
 });
